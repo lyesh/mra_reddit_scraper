@@ -1,8 +1,9 @@
 import praw
 import sqlite3
+# import sqlalchemy
 
 subreddit_id_query = "SELECT * FROM subreddits WHERE name=?;"
-
+subreddit_insert = "INSERT INTO subreddits (name) VALUES (?);"
 
 def main(subreddit_name, submission_id, database):
     client_id = 'PCmdhrO8vLNGjw'
