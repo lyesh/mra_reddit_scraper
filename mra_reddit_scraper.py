@@ -1,11 +1,15 @@
 import praw
-import sqlite3
-# import sqlalchemy
+import csv
+import inspect
+import copy
 
-subreddit_id_query = "SELECT * FROM subreddits WHERE name=?;"
-subreddit_insert = "INSERT INTO subreddits (name) VALUES (?);"
+# class MRARedditScraper:
+#     def __init__(self, reddit = praw.Reddit()):
+#         self.output_filename = ""
+#         self.output_directory = ""
+#         self.reddit = reddit
 
-def main(subreddit_name, submission_id, database):
+def main(subreddit_name, submission_id):
     client_id = 'PCmdhrO8vLNGjw'
     client_secret = 'Q6f3xbnnNK4UdkuIstpWbbC2q_4'
     password = 'whateverwhocares'
@@ -17,28 +21,22 @@ def main(subreddit_name, submission_id, database):
                          password=password,
                          user_agent=user_agent,
                          username=memescholar)
-
-    database.execute()
-
     subreddit = reddit.subreddit(subreddit_name)
-    get_subreddit_id()
     submission = reddit.submission(id=submission_id)
-    threadId = subreddit.display_name + submission.id
-    print subreddit.fullname
-    print submission.title
-    print submission.selftext
+    row_header = [subreddit_name, submission_id, submission.title]
+    row = copy.copy(row_header)
+    row.append("submission")
+    row.append(submission.selftext.encode('UTF-8'))
+    rows = [row]
     for comment in submission.comments.list():
-        if comment.body:
-            print comment.body
+        if isinstance(comment,praw.models.reddit.comment.Comment):
+            row = copy.copy(row_header)
+            row.append("comment")
+            row.append(comment.body.encode('UTF-8'))
+            rows.append(row)
 
-def connectToSql():
-    db = sqlite3.connect(":memory:")
-    script = open('resources/create_post_db.sql')
-    scriptString = ""
-    for line in script.readlines():
-        scriptString += line
-    db.executescript(scriptString)
-    return db
+    with open('blah.csv', 'w') as csv_file:
+        csv_writer = csv.writer(csv_file, dialect='excel-tab', quoting=csv.QUOTE_ALL)
+        csv_writer.writerows(rows)
 
-sqliteDB = connectToSql()
-main(subreddit='TheRedPill', submissionId='6sbx6i', database=sqliteDB)
+main(subreddit_name='TheRedPill', submission_id='6sbx6i')
