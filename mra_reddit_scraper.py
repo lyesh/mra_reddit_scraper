@@ -29,6 +29,7 @@ def main(subreddit_name, submission_id):
     row.append(submission.selftext.encode('UTF-8'))
     rows = [row]
     for comment in submission.comments.list():
+        # only save off actual comment bodies (ignore MoreComment, etc objects)
         if isinstance(comment,praw.models.reddit.comment.Comment):
             row = copy.copy(row_header)
             row.append("comment")
